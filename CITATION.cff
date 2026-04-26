@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use this macro, please cite it using the metadata below."
+title: "detect_capillaries_and_arterioles: Compartment-specific quantification of amyloid-β in brain vasculature from confocal Z-stacks"
+type: software
+authors:
+  - given-names: Tudor-Gabriel
+    family-names: Boghițoiu
+    affiliation: "Doctoral School of Medicine and Pharmacy, George Emil Palade University of Medicine, Pharmacy, Science, and Technology of Târgu Mureș, Romania"
+    orcid: "https://orcid.org/0009-0002-3772-4427"
+version: "1.0.0-pre"
+license: MIT
+repository-code: "https://github.com/tudorboghitoiu-ui/detect_capillaries_and_arterioles"
+url: "https://github.com/tudorboghitoiu-ui/detect_capillaries_and_arterioles"
+keywords:
+  - "image analysis"
+  - "Fiji"
+  - "ImageJ"
+  - "confocal microscopy"
+  - "amyloid-beta"
+  - "cerebral amyloid angiopathy"
+  - "intramural periarterial drainage"
+  - "IPAD"
+  - "neurodegenerative disease"
+  - "vascular biology"
+abstract: >-
+  Fiji/ImageJ macro for automated, compartment-specific quantification of
+  amyloid-β in brain vasculature from confocal Z-stacks. Segments four
+  mutually exclusive vascular compartments (capillary basement membrane,
+  large vessel wall, large vessel smooth-muscle layer, non-vascular tissue)
+  and reports per-compartment amyloid load, intensity statistics, and
+  morphometric measurements. Validated on mouse hippocampal sections
+  acquired at 20× (NA 0.75, 0.568 µm/pixel).
