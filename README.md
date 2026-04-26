@@ -38,7 +38,7 @@ If your input is a 4-channel Leica `.lif` Z-stack with channel order C1=SMA, C2=
 4. Click **Run**. The macro will prompt once per Fiji session for an output directory (e.g. `~/Desktop/QC/`), then process the active image.
 5. Inspect the QC overlay image and the QC summary printed to the Log window.
 
-Per-image processing takes 10–20 seconds on a recent desktop (see [Validation summary](#validation-summary) for indicative timings).
+Per-image processing typically takes a few tens of seconds on a recent desktop (see [Validation summary](#validation-summary) for measured timings on the validation hardware).
 
 ---
 
@@ -50,7 +50,7 @@ The macro takes a single confocal Z-stack as input and produces:
 - A **per-image QC summary** printed to the Fiji Log, reporting for each compartment: object count, mean / standard deviation / maximum area, and mean / standard deviation pixel intensity in the relevant channel.
 - **Per-ROI Results tables** for each compartment, suitable for export to CSV and downstream statistical analysis. Each row corresponds to one segmented object and includes its area, total amyloid pixel area within the object, mean amyloid intensity, particle count, and mean particle size.
 - A **non-vascular-tissue amyloid measurement** representing background parenchymal Aβ outside any segmented vessel.
-- Optional **binary mask exports** for spatial validation against manual annotation, enabled by setting `CFG_VALIDATION_MODE = 1` in the configuration block.
+- Optional **binary mask exports** for spatial validation against manual annotation, enabled by setting `CFG_VALIDATION_MODE = true` in the configuration block.
 
 The pipeline runs in five phases that mirror the figure flowchart in the methodology manuscript: image preparation, channel-by-channel feature extraction, vascular segmentation, compartment classification, and quantification.
 
@@ -84,7 +84,7 @@ No compilation step is required.
 | Image type | Confocal Z-stack |
 | Channels | 3 or 4. Default channel order: C1=SMA (smooth muscle actin), C2=Aβ (amyloid-beta), C3=ColIV (collagen IV, basement membrane), C4=DAPI (nuclei). DAPI is optional. |
 | Bit depth | 8-bit or 16-bit grayscale per channel |
-| Validation conditions | 1024×1024 pixels, 0.568 µm/pixel, 100–200 Z-slices, mouse hippocampal sections |
+| Validation conditions | 1024×1024 pixels, 0.568 µm/pixel, 29–48 Z-planes (z-step 0.68–0.69 µm), mouse hippocampal sections |
 
 The macro processes one image at a time. For batch processing, use Fiji's **Process > Batch > Macro...** or wrap the macro in your own loop over file paths.
 
@@ -99,7 +99,7 @@ If your acquisition differs substantially from the validation conditions — for
 1. Open the Z-stack in Fiji (**File > Import > Bio-Formats**).
 2. Open the macro in the script editor and click **Run**.
 3. On first run in a Fiji session, a folder picker will appear. Choose where QC outputs should be saved. This choice persists for the rest of the session.
-4. Wait 10–20 seconds. Progress is logged to the Log window with timestamps.
+4. Wait for processing to complete (typically a few tens of seconds; progress is logged to the Log window with timestamps).
 5. When the run completes, inspect:
    - The QC overlay image (saved to the chosen output directory and shown on screen).
    - The QC summary in the Log window.
@@ -107,19 +107,19 @@ If your acquisition differs substantially from the validation conditions — for
 
 ### Batch processing
 
-To process every Z-stack in a folder, open Fiji's **Process > Batch > Macro...** dialog, point it at your input folder, and paste the macro into the script box. Set the output directory in the macro configuration (`CFG_QC_DIR`) so it doesn't prompt repeatedly.
+To process every Z-stack in a folder, open Fiji's **Process > Batch > Macro...** dialog, point it at your input folder, and paste the macro into the script box. Set the output directory in the macro configuration (`CFG_QC_OUTPUT_DIR`) so it doesn't prompt repeatedly.
 
-For unattended runs that should not prompt for paths, hardcode `CFG_QC_DIR` to an absolute path in Section 1 of the configuration block.
+For unattended runs that should not prompt for paths, hardcode `CFG_QC_OUTPUT_DIR` to an absolute path in Section 1 of the configuration block.
 
 ### Validation mode
 
-Setting `CFG_VALIDATION_MODE = 1` in the configuration block enables export of binary masks for each compartment alongside the QC image. These can be loaded into a separate annotation tool to compute spatial overlap statistics (precision, recall, IoU) against manual ground truth. Validation mode roughly doubles processing time and disk usage; leave it disabled for routine analysis.
+Setting `CFG_VALIDATION_MODE = true` in the configuration block enables export of binary masks for each compartment alongside the QC image. These can be loaded into a separate annotation tool to compute spatial overlap statistics (precision, recall, IoU) against manual ground truth. Validation mode roughly doubles processing time and disk usage; leave it disabled for routine analysis.
 
 ---
 
 ## Configuration
 
-The macro's behaviour is controlled by approximately 110 `CFG_*` variables at the top of the file, organised into ten numbered sections. Most users will only ever change Section 2 (channel assignment).
+The macro's behaviour is controlled by 113 `CFG_*` variables at the top of the file, organised into ten numbered sections. Most users will only ever change Section 2 (channel assignment).
 
 ### Section 2 — channel assignment (the only section most users will touch)
 
@@ -141,7 +141,7 @@ If you have only 3 channels (no DAPI), set `CFG_CHANNELS_N = 3`. The DAPI-bleed-
 
 | Section | When to consider editing |
 |---|---|
-| 1. FILE I/O | If you want unattended batch processing, hardcode `CFG_QC_DIR` and `CFG_VALIDATION_DIR`. |
+| 1. FILE I/O | If you want unattended batch processing, hardcode `CFG_QC_OUTPUT_DIR` and `CFG_VALIDATION_EXPORT_DIR`. |
 | 3. FEATURE TOGGLES | If you want to disable adaptive thresholding, DAPI bleed-through correction, or enable validation export. |
 | 4. EMPTY SPACE DETECTION | If your sections have unusually large empty regions (e.g. tissue tears) and the empty-space mask is over- or under-detecting them. |
 | 5. SHARED MORPHOLOGICAL CONSTANTS | Almost never. These are tightly tuned defaults. |
@@ -159,10 +159,10 @@ Each section in the macro is preceded by a header comment that explains what the
 
 For each processed image, the macro produces:
 
-### On disk (in `CFG_QC_DIR`)
+### On disk (in `CFG_QC_OUTPUT_DIR`)
 
 - `QC_<imagename>.tif` — RGB overlay of the maximum projection with all four compartments outlined.
-- If `CFG_VALIDATION_MODE = 1`: `<imagename>_capillaries_mask.tif`, `<imagename>_sma_mask.tif`, `<imagename>_large_vessels_mask.tif`, `<imagename>_amyloid_mask.tif`, `<imagename>_nonvascular_mask.tif`.
+- If `CFG_VALIDATION_MODE = true` (output path `CFG_VALIDATION_EXPORT_DIR`): four binary compartment masks — `<imagename>_capillaries_mask.tif`, `<imagename>_sma_mask.tif`, `<imagename>_largevessels_mask.tif`, `<imagename>_amyloid_mask.tif` — plus three raw maximum-projection channel images for downstream intensity validation: `<imagename>_RAW_MAX_C1_SMA.tif`, `<imagename>_RAW_MAX_C2_Amyloid.tif`, `<imagename>_RAW_MAX_C3_ColIV.tif`.
 
 ### In the Fiji Log window
 
@@ -206,7 +206,7 @@ The macro defaults are tuned for 0.568 µm/pixel imaging of mouse hippocampus. I
 
 ### Different pixel size
 
-Most size thresholds in the macro are expressed in **pixels squared** (`CFG_COLLAGEN_MIN_SIZE`, `CFG_SMA_MIN_SIZE`, `CFG_LARGE_VESSEL_MIN_SIZE`, `CFG_NUCLEI_MIN_SIZE`, the bled-nuclei size range, the size bin breakpoints in collagen filtering, etc.). If your pixel size differs from the validation, scale these by the ratio of areas:
+Most size thresholds in the macro are expressed in **pixels squared** (`CFG_COLLAGEN_MIN_SIZE`, `CFG_SMA_MIN_SIZE`, `CFG_LV_MIN_SIZE`, `CFG_NUCLEI_MIN_SIZE`, the bled-nuclei size range, the size bin breakpoints in collagen filtering, etc.). If your pixel size differs from the validation, scale these by the ratio of areas:
 
 ```
 scaling_factor = (validation_pixel_size / your_pixel_size)^2
@@ -219,7 +219,7 @@ scaling_factor = (validation_pixel_size / your_pixel_size)^2
 scaling_factor = (0.568 / 0.4)^2 = 2.02
 ```
 
-Multiply every pixel-area threshold by 2.02. For example, `CFG_LARGE_VESSEL_MIN_SIZE = 150` becomes `150 × 2.02 ≈ 303`. The collagen size bins (`<=150`, `<=300`, `<=500`, `<=1000`, `>1000`) become approximately (`<=303`, `<=606`, `<=1010`, `<=2020`, `>2020`). The Phansalkar radii in Section 5 are also pixel-based and should scale by the linear ratio (`0.568 / your_pixel_size`), not the squared ratio.
+Multiply every pixel-area threshold by 2.02. For example, `CFG_LV_MIN_SIZE = 150` becomes `150 × 2.02 ≈ 303`. The collagen size bins (`<=150`, `<=300`, `<=500`, `<=1000`, `>1000`) become approximately (`<=303`, `<=606`, `<=1010`, `<=2020`, `>2020`). The Phansalkar radii (defined per channel in Sections 6, 7, and 8) are also pixel-based and should scale by the linear ratio (`0.568 / your_pixel_size`), not the squared ratio.
 
 Do not rescale Yen-factor multipliers, percentile thresholds, or the SMA-collagen overlap level cutoffs — these are dimensionless and independent of pixel size.
 
@@ -241,7 +241,7 @@ This calibration process typically takes a few hours and produces parameter chan
 
 ### The macro prompts for an output directory every time I run it
 
-Either you are starting a fresh Fiji session each time (the prompt is once per session by design), or you have left `CFG_QC_DIR = ""` and want to suppress the prompt entirely. Set `CFG_QC_DIR` to an absolute path in Section 1 of the configuration block.
+Either you are starting a fresh Fiji session each time (the prompt is once per session by design), or you have left `CFG_QC_OUTPUT_DIR = ""` and want to suppress the prompt entirely. Set `CFG_QC_OUTPUT_DIR` to an absolute path in Section 1 of the configuration block.
 
 ### "Channel count mismatch" error
 
@@ -259,9 +259,9 @@ Most often caused by very dim ColIV staining or by the bled-through-nuclei filte
 
 The SMA antibody is occasionally non-specific. The macro filters SMA detections by spatial overlap with collagen IV (Section 9) and by intensity (Section 8, adaptive). If non-vascular cells are still being detected, raise the L1 / L2 intensity floor in Section 8.
 
-### Run takes much longer than 20 seconds per image
+### Run takes much longer than typical
 
-Check the Log timestamps. Empty-space detection (4 median-filtered MAX projections on the full Z-stack) is normally the slowest step at 5–9 seconds. If the run is dominated by SMA classification or the Phansalkar steps, the input image may have many more candidate ROIs than typical (e.g. very dense vasculature or noisy staining). This is usually a property of the data, not a macro bug.
+Check the Log timestamps. Empty-space detection (4 median-filtered MAX projections on the full Z-stack) is normally the slowest step. If the run is dominated by SMA classification or the Phansalkar steps, the input image may have many more candidate ROIs than typical (e.g. very dense vasculature or noisy staining). This is usually a property of the data, not a macro bug.
 
 ### Java errors in the Fiji editor
 
@@ -275,7 +275,7 @@ This was a real issue in pre-1.0 versions and was fixed before release. If you o
 
 ## Validation summary
 
-Version 1.0 was validated on **12 confocal Z-stacks from 5 wild-type mice**, acquired on a Leica TCS SP8 confocal microscope at 20× (NA 0.75, 0.568 µm/pixel), 1024×1024 pixels, 116–192 Z-slices per stack. Total processing time across the validation set was approximately 3.5 minutes.
+Version 1.0 was validated on **12 confocal Z-stacks from 5 wild-type mice**, acquired on a Leica TCS SP8 confocal microscope at 20× (NA 0.75, 0.568 µm/pixel), 1024×1024 pixels, 29–48 Z-planes per stack (z-step 0.68–0.69 µm, total z-range 19.2–32.2 µm). Median per-image processing time on the validation hardware was <TODO_FILL_IN_PROCESSING_TIME> (range <TODO_FILL_IN_PROCESSING_RANGE>). Hardware specifications and full timing breakdown are reported in the methodology manuscript.
 
 Validation against blinded manual annotation (performed by an independent postdoc on a subset of the dataset) is reported in the methodology manuscript. The validation includes per-compartment precision and recall, intra-rater reliability, and qualitative assessment of edge cases (lumen holes, non-specific SMA staining, regions near tissue tears).
 
