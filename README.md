@@ -275,7 +275,7 @@ This was a real issue in pre-1.0 versions and was fixed before release. If you o
 
 ## Validation summary
 
-Version 1.0 was validated on **12 confocal Z-stacks from 5 wild-type mice**, acquired on a Leica TCS SP8 confocal microscope at 20× (NA 0.75, 0.568 µm/pixel), 1024×1024 pixels, 29–48 Z-planes per stack (z-step 0.68–0.69 µm, total z-range 19.2–32.2 µm). Median per-image processing time on the validation hardware was <TODO_FILL_IN_PROCESSING_TIME> (range <TODO_FILL_IN_PROCESSING_RANGE>). Hardware specifications and full timing breakdown are reported in the methodology manuscript.
+Version 1.0 was validated on **12 confocal Z-stacks from 5 wild-type mice**, acquired on a Leica TCS SP8 confocal microscope at 20× (NA 0.75, 0.568 µm/pixel), 1024×1024 pixels, 29–48 Z-planes per stack (z-step 0.68–0.69 µm, total z-range 19.2–32.2 µm). Median per-image processing time on the validation hardware was 19 seconds (range 13 to 90). Hardware specifications and full timing breakdown are reported in the methodology manuscript.
 
 Validation against blinded manual annotation (performed by an independent postdoc on a subset of the dataset) is reported in the methodology manuscript. The validation includes per-compartment precision and recall, intra-rater reliability, and qualitative assessment of edge cases (lumen holes, non-specific SMA staining, regions near tissue tears).
 
@@ -309,7 +309,7 @@ If you use this macro in published work, please cite both the methodology manusc
 
 **Methodology manuscript** (in preparation; placeholder — update when published):
 
-> Boghițoiu T-G, et al. *<TODO_FILL_IN_MANUSCRIPT_TITLE>*. <TODO_FILL_IN_JOURNAL>, 2026. DOI: <TODO_FILL_IN_MANUSCRIPT_DOI>
+> Boghițoiu T-G, et al. *An open-source automated pipeline for compartment-specific quantification of amyloid-beta in the intramural periarterial drainage pathway of mouse brain*. <TODO_FILL_IN_JOURNAL>, 2026. DOI: <TODO_FILL_IN_MANUSCRIPT_DOI>
 
 **Code archive**:
 
