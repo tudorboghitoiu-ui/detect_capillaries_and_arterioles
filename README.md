@@ -313,7 +313,7 @@ If you use this macro in published work, please cite both the methodology manusc
 
 **Code archive**:
 
-> Boghițoiu T-G. *detect_capillaries_and_arterioles: Compartment-specific quantification of amyloid-β in brain vasculature from confocal Z-stacks* (Version 1.0.0). Zenodo, 2026. DOI: <TODO_FILL_IN_ZENODO_CONCEPT_DOI>
+> Boghițoiu T-G. *detect_capillaries_and_arterioles: Compartment-specific quantification of amyloid-β in brain vasculature from confocal Z-stacks* (Version 1.0.0). Zenodo, 2026. DOI: 10.5281/zenodo.20256931
 
 A `CITATION.cff` file is included in the repository; GitHub renders a "Cite this repository" button in the sidebar that uses this metadata.
 
